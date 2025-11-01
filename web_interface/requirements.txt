@@ -1,0 +1,35 @@
+"""
+Requirements file for MathML Parser Web Interface
+=================================================
+
+This file lists all Python dependencies needed for the web interface component
+of the MathML parser project.
+"""
+
+# Core web framework
+flask==2.3.3
+flask-socketio==5.3.6
+
+# WebSocket support
+python-socketio==5.8.0
+python-engineio==4.7.1
+
+# JSON handling (usually included with Python)
+# Additional web utilities
+werkzeug==2.3.7
+
+# For development
+flask-cors==4.0.0  # CORS support for development
+
+# Production server (optional)
+gunicorn==21.2.0   # WSGI server for production
+eventlet==0.33.3   # Async server for Socket.IO
+
+# Static file serving (for production)
+whitenoise==6.5.0
+
+# Additional dependencies for mathematical rendering
+# These are optional but recommended
+sympy==1.12        # For additional mathematical computation
+matplotlib==3.7.2  # For potential plot generation
+numpy==1.24.3      # For numerical operations
