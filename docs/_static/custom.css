@@ -1,0 +1,263 @@
+/* Custom CSS for MathML Parser Documentation */
+
+/* Main layout adjustments */
+.wy-nav-content-wrap {
+    margin-left: 300px;
+}
+
+.wy-nav-side {
+    width: 300px;
+}
+
+/* Mathematics styling */
+.math-example {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 15px;
+    margin: 15px 0;
+    font-family: 'Courier New', monospace;
+}
+
+.math-expression {
+    font-family: 'Times New Roman', 'Computer Modern', serif;
+    font-size: 1.1em;
+    line-height: 1.4;
+}
+
+/* Code blocks for mathematical expressions */
+.highlight .s, .highlight .s1, .highlight .s2 {
+    color: #d14 !important; /* String color for expressions */
+}
+
+.highlight .nf {
+    color: #900 !important; /* Function names */
+}
+
+/* API documentation styling */
+.py.class > dt {
+    background-color: #f0f7ff;
+    border-left: 4px solid #0078d4;
+    padding-left: 10px;
+}
+
+.py.method > dt {
+    background-color: #f8f9fa;
+    border-left: 3px solid #6c757d;
+    padding-left: 8px;
+}
+
+.py.function > dt {
+    background-color: #fff8e1;
+    border-left: 3px solid #ff9800;
+    padding-left: 8px;
+}
+
+/* Parameter lists */
+.field-list {
+    margin-left: 20px;
+}
+
+.field-name {
+    font-weight: bold;
+    color: #0078d4;
+}
+
+/* Navigation improvements */
+.wy-menu-vertical li.toctree-l1 > a {
+    font-weight: bold;
+}
+
+.wy-menu-vertical li.toctree-l2 > a {
+    color: #666;
+    padding-left: 30px;
+}
+
+.wy-menu-vertical li.toctree-l3 > a {
+    color: #888;
+    padding-left: 50px;
+    font-size: 0.9em;
+}
+
+/* Example sections */
+.example-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.example-section h3 {
+    color: white;
+    margin-top: 0;
+}
+
+/* Warning and note admonitions */
+.admonition.warning {
+    border-color: #ff9800;
+    background-color: #fff3e0;
+}
+
+.admonition.note {
+    border-color: #2196f3;
+    background-color: #e3f2fd;
+}
+
+.admonition.tip {
+    border-color: #4caf50;
+    background-color: #e8f5e8;
+}
+
+/* Table styling for API documentation */
+table.docutils {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 15px 0;
+}
+
+table.docutils th {
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+    font-weight: bold;
+}
+
+table.docutils td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    vertical-align: top;
+}
+
+table.docutils tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* Code syntax highlighting improvements */
+.highlight .k {
+    color: #0000ff; /* Keywords */
+    font-weight: bold;
+}
+
+.highlight .nc {
+    color: #2b91af; /* Class names */
+    font-weight: bold;
+}
+
+.highlight .mi {
+    color: #009999; /* Numbers */
+}
+
+.highlight .s {
+    color: #a31515; /* Strings */
+}
+
+.highlight .c1 {
+    color: #008000; /* Comments */
+    font-style: italic;
+}
+
+/* Footer improvements */
+footer {
+    border-top: 1px solid #e9ecef;
+    margin-top: 40px;
+    padding-top: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .wy-nav-content-wrap {
+        margin-left: 0;
+    }
+    
+    .wy-nav-side {
+        left: -300px;
+    }
+    
+    .example-section {
+        padding: 15px;
+        margin: 15px 0;
+    }
+}
+
+/* Mathematical expression formatting in documentation */
+.docstring .math {
+    font-family: 'Times New Roman', serif;
+    font-style: italic;
+}
+
+/* Version selector styling */
+.version-selector {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin: 10px 0;
+}
+
+/* Search results improvements */
+.search-results .highlighted {
+    background-color: #ffeb3b;
+    padding: 2px 4px;
+    border-radius: 2px;
+}
+
+/* Custom heading styles */
+h1.page-title {
+    color: #2c3e50;
+    border-bottom: 3px solid #3498db;
+    padding-bottom: 10px;
+    margin-bottom: 30px;
+}
+
+h2.section-title {
+    color: #34495e;
+    border-bottom: 2px solid #95a5a6;
+    padding-bottom: 8px;
+}
+
+/* Sidebar improvements */
+.wy-nav-side .wy-side-nav-search {
+    background-color: #2980b9;
+}
+
+.wy-nav-side .wy-side-nav-search input[type=text] {
+    border-radius: 4px;
+    border: none;
+}
+
+/* Footer links */
+.footer-links {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.footer-links a {
+    color: #3498db;
+    text-decoration: none;
+    margin: 0 15px;
+}
+
+.footer-links a:hover {
+    text-decoration: underline;
+}
+
+/* Print styles */
+@media print {
+    .wy-nav-side,
+    .wy-nav-top,
+    .rst-footer-buttons {
+        display: none !important;
+    }
+    
+    .wy-nav-content-wrap {
+        margin-left: 0 !important;
+    }
+    
+    .example-section {
+        background: none !important;
+        color: black !important;
+        border: 2px solid #ccc;
+    }
+}

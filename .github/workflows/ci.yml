@@ -1,0 +1,399 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run weekly to check for dependency issues
+    - cron: '0 0 * * 0'
+
+env:
+  # Minimum Python version to support
+  MIN_PYTHON_VERSION: "3.8"
+  # Latest Python version to test
+  MAX_PYTHON_VERSION: "3.12"
+
+jobs:
+  # Quality assurance job - linting, formatting, type checking
+  quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.MAX_PYTHON_VERSION }}
+        cache: 'pip'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+        
+    - name: Check code formatting with Black
+      run: black --check --diff mathml_parser/
+      
+    - name: Check import sorting with isort
+      run: isort --check-only --diff mathml_parser/
+      
+    - name: Lint with flake8
+      run: flake8 mathml_parser/
+      
+    - name: Type check with mypy
+      run: mypy mathml_parser/
+      
+    - name: Security check with bandit
+      run: |
+        pip install bandit[toml]
+        bandit -r mathml_parser/ -f json -o bandit-report.json
+        
+    - name: Upload security report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: security-report
+        path: bandit-report.json
+
+  # Test job - run tests across multiple Python versions and platforms
+  test:
+    name: Test Suite
+    needs: quality
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        exclude:
+          # Reduce matrix size for faster CI
+          - os: macos-latest
+            python-version: "3.9"
+          - os: windows-latest
+            python-version: "3.9"
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+        
+    - name: Install system dependencies (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libxml2-dev libxslt-dev
+        
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev,documents,performance]"
+        
+    - name: Run tests with pytest
+      run: |
+        pytest \
+          --verbose \
+          --cov=mathml_parser \
+          --cov-report=xml \
+          --cov-report=term-missing \
+          --junitxml=pytest-results.xml \
+          --benchmark-skip
+          
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: test-results-${{ matrix.os }}-py${{ matrix.python-version }}
+        path: |
+          pytest-results.xml
+          coverage.xml
+          
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      if: matrix.os == 'ubuntu-latest' && matrix.python-version == env.MAX_PYTHON_VERSION
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  # Performance benchmarks
+  benchmark:
+    name: Performance Benchmarks
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.MAX_PYTHON_VERSION }}
+        cache: 'pip'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev,performance]"
+        
+    - name: Run performance benchmarks
+      run: |
+        pytest \
+          --benchmark-only \
+          --benchmark-json=benchmark-results.json \
+          --benchmark-compare-fail=mean:10% \
+          --benchmark-compare-fail=min:10%
+          
+    - name: Upload benchmark results
+      uses: actions/upload-artifact@v3
+      with:
+        name: benchmark-results
+        path: benchmark-results.json
+
+  # Integration tests with optional dependencies
+  integration:
+    name: Integration Tests
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      matrix:
+        extra: [web, education, documents, advanced-input, database]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.MAX_PYTHON_VERSION }}
+        cache: 'pip'
+        
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          libxml2-dev libxslt-dev \
+          libcairo2-dev libpango1.0-dev \
+          tesseract-ocr \
+          redis-server
+          
+    - name: Install dependencies with ${{ matrix.extra }}
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev,${{ matrix.extra }}]"
+        
+    - name: Run integration tests
+      run: |
+        pytest \
+          -m "integration or ${{ matrix.extra }}" \
+          --verbose \
+          --tb=short
+
+  # Documentation build and validation
+  docs:
+    name: Documentation
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.MAX_PYTHON_VERSION }}
+        cache: 'pip'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[docs]"
+        
+    - name: Build documentation
+      run: |
+        cd docs
+        make html SPHINXOPTS="-W --keep-going"
+        
+    - name: Check documentation links
+      run: |
+        cd docs
+        make linkcheck
+        
+    - name: Upload documentation
+      uses: actions/upload-artifact@v3
+      with:
+        name: documentation
+        path: docs/_build/html/
+
+  # Security scanning
+  security:
+    name: Security Scan
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        
+    - name: Upload Trivy scan results
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  # Build and test package distribution
+  build:
+    name: Build Package
+    needs: [test, docs]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.MAX_PYTHON_VERSION }}
+        cache: 'pip'
+        
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine
+        
+    - name: Build source distribution and wheel
+      run: python -m build
+      
+    - name: Check package metadata
+      run: twine check dist/*
+      
+    - name: Test package installation
+      run: |
+        pip install dist/*.whl
+        python -c "import mathml_parser; print(mathml_parser.__version__)"
+        
+    - name: Upload package artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: package-distributions
+        path: dist/
+
+  # Release job - only runs on version tags
+  release:
+    name: Release to PyPI
+    needs: [test, integration, docs, security, build]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    environment: release
+    timeout-minutes: 10
+    
+    steps:
+    - name: Download package artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: package-distributions
+        path: dist/
+        
+    - name: Publish to Test PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
+        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        
+    - name: Test installation from Test PyPI
+      run: |
+        pip install --index-url https://test.pypi.org/simple/ \
+          --extra-index-url https://pypi.org/simple/ \
+          mathml-parser
+        python -c "import mathml_parser; print(mathml_parser.__version__)"
+        
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.PYPI_API_TOKEN }}
+        
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+
+  # Deployment to documentation hosting
+  deploy-docs:
+    name: Deploy Documentation
+    needs: [docs, release]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    timeout-minutes: 10
+    
+    steps:
+    - name: Download documentation
+      uses: actions/download-artifact@v3
+      with:
+        name: documentation
+        path: docs-html/
+        
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs-html
+
+  # Notification job - always runs to notify about CI status
+  notify:
+    name: Notification
+    needs: [quality, test, integration, docs, security, build]
+    runs-on: ubuntu-latest
+    if: always()
+    timeout-minutes: 5
+    
+    steps:
+    - name: Notify success
+      if: ${{ needs.quality.result == 'success' && needs.test.result == 'success' }}
+      run: echo "✅ All CI checks passed successfully!"
+      
+    - name: Notify failure
+      if: ${{ needs.quality.result == 'failure' || needs.test.result == 'failure' }}
+      run: |
+        echo "❌ CI checks failed!"
+        echo "Quality: ${{ needs.quality.result }}"
+        echo "Tests: ${{ needs.test.result }}"
+        echo "Integration: ${{ needs.integration.result }}"
+        echo "Docs: ${{ needs.docs.result }}"
+        echo "Security: ${{ needs.security.result }}"
+        echo "Build: ${{ needs.build.result }}"
+        exit 1

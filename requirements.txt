@@ -1,0 +1,22 @@
+# Core dependencies
+lark>=1.1.0
+
+# Optional dependencies for enhanced features
+# Install with: pip install mathml-parser[dev,docs,performance]
+
+# Development dependencies
+# pytest>=7.0.0
+# pytest-cov>=4.0.0
+# black>=22.0.0
+# isort>=5.10.0
+# mypy>=1.0.0
+# flake8>=5.0.0
+
+# Documentation dependencies
+# sphinx>=5.0.0
+# sphinx-rtd-theme>=1.0.0
+# myst-parser>=0.18.0
+
+# Performance dependencies
+# cython>=0.29.0
+# numpy>=1.20.0

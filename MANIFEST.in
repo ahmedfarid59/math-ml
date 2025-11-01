@@ -1,0 +1,96 @@
+# Include package data and documentation files
+include README.md
+include LICENSE
+include CHANGELOG.md  
+include CONTRIBUTING.md
+include pyproject.toml
+include requirements.txt
+
+# Include all Python packages
+recursive-include mathml_parser *.py
+recursive-include mathml_parser py.typed
+
+# Include configuration files
+recursive-include mathml_parser/config *.yaml
+recursive-include mathml_parser/config *.json
+recursive-include mathml_parser/config *.toml
+
+# Include localization files
+recursive-include mathml_parser/locale *.po
+recursive-include mathml_parser/locale *.mo
+
+# Include template files
+recursive-include mathml_parser/templates *.html
+recursive-include mathml_parser/templates *.md
+recursive-include mathml_parser/templates *.jinja2
+
+# Include static web assets
+recursive-include mathml_parser/static/css *.css
+recursive-include mathml_parser/static/js *.js
+recursive-include mathml_parser/static/images *.png
+recursive-include mathml_parser/static/images *.svg
+recursive-include mathml_parser/static/images *.ico
+
+# Include documentation source
+recursive-include docs *.rst
+recursive-include docs *.md
+recursive-include docs *.txt
+recursive-include docs Makefile
+recursive-include docs *.py
+
+# Include examples and tutorials
+recursive-include examples *.py
+recursive-include examples *.md
+recursive-include examples *.ipynb
+recursive-include examples *.txt
+
+# Include test data and fixtures
+recursive-include tests/fixtures *.txt
+recursive-include tests/fixtures *.json
+recursive-include tests/fixtures *.xml
+
+# Exclude development and build artifacts
+exclude .gitignore
+exclude .pre-commit-config.yaml
+exclude tox.ini
+exclude mypy.ini
+exclude .coverage
+exclude .pytest_cache
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+recursive-exclude * *.pyo
+recursive-exclude * *.pyd
+recursive-exclude * .DS_Store
+recursive-exclude * Thumbs.db
+
+# Exclude CI/CD and development files
+exclude .github
+recursive-exclude .github *
+exclude .vscode
+recursive-exclude .vscode *
+exclude .idea
+recursive-exclude .idea *
+
+# Exclude build directories
+exclude build
+recursive-exclude build *
+exclude dist
+recursive-exclude dist *
+exclude *.egg-info
+recursive-exclude *.egg-info *
+
+# Exclude temporary and cache files
+exclude .mypy_cache
+recursive-exclude .mypy_cache *
+exclude .ruff_cache
+recursive-exclude .ruff_cache *
+exclude htmlcov
+recursive-exclude htmlcov *
+
+# Exclude virtual environments
+exclude .venv
+recursive-exclude .venv *
+exclude venv
+recursive-exclude venv *
+exclude .env
+recursive-exclude .env *
